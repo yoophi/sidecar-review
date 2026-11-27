@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import type { Document } from "../../entities/document";
 
 const relative = new Intl.RelativeTimeFormat("ko");
+// how long a pushed-to session stays marked NEW when nobody clicks it
+const NEW_FOR_MS = 10 * 60_000;
 
 /** "20분 전". Under a minute is "방금 전". */
 function ago(ms: number, now: number) {
@@ -18,6 +20,10 @@ export function SessionList(props: { docs: Document[]; current: Document; onSele
     const timer = setInterval(() => setNow(Date.now()), 30_000);
     return () => clearInterval(timer);
   }, []);
+  // when each session was last clicked; in memory only, so a restart re-marks whatever is still recent
+  const [seen, setSeen] = useState<Record<string, number>>({});
+  const isNew = (d: Document) =>
+    d.updated_at > (seen[d.session] ?? 0) && Math.max(now, Date.now()) - d.updated_at < NEW_FOR_MS;
   // one group per agent conversation, latest activity first; reviews that named no conversation go last
   const groups = new Map<string, Document[]>();
   for (const d of [...props.docs].reverse()) {
@@ -32,7 +38,15 @@ export function SessionList(props: { docs: Document[]; current: Document; onSele
         <details key={id} open>
           <summary>{id ? [docs[0].origin.agent, id].filter(Boolean).join(" · ") : "세션 정보 없음"}</summary>
           {docs.map((d) => (
-            <button key={d.session} aria-current={d === props.current} onClick={() => props.onSelect(d.session)}>
+            <button
+              key={d.session}
+              aria-current={d === props.current}
+              data-new={isNew(d) || undefined}
+              onClick={() => {
+                setSeen({ ...seen, [d.session]: Date.now() });
+                props.onSelect(d.session);
+              }}
+            >
               {/* floated first so the name wraps around it; the panel shows on hover or keyboard focus, in CSS */}
               <span className="info">
                 <i aria-hidden>ⓘ</i>
@@ -43,6 +57,7 @@ export function SessionList(props: { docs: Document[]; current: Document; onSele
                 </span>
               </span>
               <strong>{d.session}</strong>
+              {isNew(d) && <mark>NEW</mark>}
               <span>{d.goal}</span>
               {/* the sv-SE locale formats as yyyy-mm-dd HH:MM:SS, in local time; 0: the session predates the timestamps */}
               <span>생성 {d.created_at ? new Date(d.created_at).toLocaleString("sv-SE") : "기록 없음"}</span>

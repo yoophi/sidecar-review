@@ -118,6 +118,19 @@ button:focus-visible .info > span {
 nav button[aria-current="true"] {
   background: #ddf4ff;
 }
+/* after the aria-current rule: a pushed-to session stands out even while it is the open one */
+nav button[data-new] {
+  background: #fff8c5;
+}
+nav mark {
+  margin-left: 6px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #9a6700;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+}
 nav span {
   display: block;
   color: #59636e;
