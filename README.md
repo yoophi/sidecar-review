@@ -39,6 +39,8 @@ claude mcp add --transport http sidecar http://127.0.0.1:7437/mcp
 
 모든 블록에 한 줄짜리 `title`을 붙일 수 있다.
 
+화면은 세션 목록 | 선택한 세션의 목표와 파일 목록 | 내용, 세 칸이다. 파일 목록에서 파일을 고르면 그 파일의 `diff`·`code` 블록만 남는다. diff는 기본이 inline이고 "diff 나란히 보기"를 켜면 side by side로 바뀐다.
+
 ```json
 {
   "session": "feat/login-retry",
@@ -60,7 +62,7 @@ Rust (`src-tauri/src`, hexagonal)
 
 React (`src`, Feature-Sliced Design)
 
-- `app` → `pages/review` → `widgets/{session-list,document-view}` → `entities/document` → `shared/ui`
+- `app` → `pages/review` → `widgets/{session-list,file-list,document-view}` → `entities/document` → `shared/ui`
 
 ## 테스트
 

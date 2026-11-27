@@ -9,11 +9,63 @@ body {
   height: 100vh;
 }
 nav {
-  width: 240px;
+  box-sizing: border-box;
+  width: 220px;
+  min-width: 120px;
+  max-width: 50vw;
   flex: none;
   overflow-y: auto;
   border-right: 1px solid #d1d9e0;
   background: #f6f8fa;
+}
+/* sits on top of the column's right border, wider than it so it is easy to grab */
+[role="separator"] {
+  flex: none;
+  width: 7px;
+  margin: 0 -3px;
+  z-index: 1;
+  cursor: col-resize;
+  touch-action: none;
+}
+[role="separator"]:hover,
+[role="separator"]:focus-visible {
+  background: #0969da;
+  outline: 0;
+}
+nav p {
+  margin: 0;
+  padding: 10px 12px;
+  border-bottom: 1px solid #d1d9e0;
+}
+summary {
+  padding: 4px 12px;
+  color: #59636e;
+  cursor: pointer;
+}
+.tree button {
+  padding: 3px 12px;
+  border-bottom: 0;
+}
+/* block-count badge */
+.tree span {
+  display: inline-block;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #d1d9e0;
+  color: #1f2328;
+  font-size: 11px;
+}
+details > div {
+  padding-left: 12px;
+}
+nav::before {
+  content: attr(aria-label);
+  display: block;
+  padding: 6px 12px;
+  border-bottom: 1px solid #d1d9e0;
+  color: #59636e;
+  font-size: 12px;
+  font-weight: 600;
 }
 nav button {
   display: block;
@@ -24,6 +76,7 @@ nav button {
   background: none;
   font: inherit;
   text-align: left;
+  overflow-wrap: anywhere;
   cursor: pointer;
 }
 nav button[aria-current="true"] {
@@ -45,6 +98,15 @@ main.empty {
   place-content: center;
   text-align: center;
 }
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+}
+header label {
+  flex: none;
+}
 h1 {
   font-size: 18px;
   margin: 0 0 16px;
@@ -57,7 +119,12 @@ code {
   font: 12px ui-monospace, monospace;
   color: #59636e;
 }
+.cm-mergeView .cm-editor {
+  margin: 0;
+  border: 0;
+}
 .cm-editor,
+.cm-mergeView,
 .mermaid,
 iframe {
   box-sizing: border-box;
