@@ -3,8 +3,8 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 
 export type Block =
-  | { type: "diff"; title: string; file: string; before: string; after: string }
-  | { type: "code"; title: string; file: string; code: string }
+  | { type: "diff"; title: string; file: string; before: string; after: string; mermaid: string }
+  | { type: "code"; title: string; file: string; code: string; mermaid: string }
   | { type: "mermaid"; title: string; source: string }
   | { type: "html"; title: string; html: string };
 

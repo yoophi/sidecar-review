@@ -32,12 +32,12 @@ claude mcp add --transport http sidecar http://127.0.0.1:7437/mcp
 
 | type | 필드 | 화면 |
 |---|---|---|
-| `diff` | `file`, `before`, `after` | CodeMirror unified diff, 안 바뀐 줄은 접힘 |
-| `code` | `file`, `code` | CodeMirror 읽기 전용 |
+| `diff` | `file`, `before`, `after`, `mermaid` | CodeMirror unified diff, 안 바뀐 줄은 접힘 |
+| `code` | `file`, `code`, `mermaid` | CodeMirror 읽기 전용 |
 | `mermaid` | `source` | Mermaid 다이어그램 |
 | `html` | `html` | sandbox iframe (차트·다이어그램) |
 
-모든 블록에 한 줄짜리 `title`을 붙일 수 있다.
+모든 블록에 한 줄짜리 `title`을 붙일 수 있다. `diff`·`code` 블록의 `mermaid`는 그 코드를 설명하는 다이어그램이고 코드 위에 그려진다. 다이어그램 없이도 명백한 코드에서만 뺀다.
 
 화면은 세션 목록 | 선택한 세션의 목표와 파일 목록 | 내용, 세 칸이다. 파일 목록에서 파일을 고르면 그 파일의 `diff`·`code` 블록만 남는다. diff는 기본이 inline이고 "diff 나란히 보기"를 켜면 side by side로 바뀐다.
 

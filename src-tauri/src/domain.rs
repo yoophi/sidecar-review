@@ -11,12 +11,18 @@ pub enum Block {
         before: String,
         #[serde(default)]
         after: String,
+        /// Diagram that explains this code, shown above it. Empty when the code is obvious on its own.
+        #[serde(default)]
+        mermaid: String,
     },
     Code {
         #[serde(default)]
         title: String,
         file: String,
         code: String,
+        /// Diagram that explains this code, shown above it. Empty when the code is obvious on its own.
+        #[serde(default)]
+        mermaid: String,
     },
     Mermaid {
         #[serde(default)]

@@ -30,7 +30,8 @@ fn tool() -> Value {
 Each session is one document; call this after every meaningful unit of work with the same `session` and the new blocks are appended in order. \
 Send only the core: the few lines that carry the logic, trimmed of imports, boilerplate, formatting and unrelated context. \
 No prose explanations — `goal` and `title` are one short line each, written in the user's language. \
-Block types: `diff` (file, before, after), `code` (file, code), `mermaid` (source), `html` (html: a self-contained chart or diagram, rendered in a sandboxed iframe).",
+Give every `diff` and `code` block a `mermaid` diagram that best explains that code (its flow, sequence, state or structure); leave it out only when the code is obvious without one. \
+Block types: `diff` (file, before, after, mermaid), `code` (file, code, mermaid), `mermaid` (source), `html` (html: a self-contained chart or diagram, rendered in a sandboxed iframe).",
         "inputSchema": {
             "type": "object",
             "required": ["session", "goal", "blocks"],
@@ -49,6 +50,7 @@ Block types: `diff` (file, before, after), `code` (file, code), `mermaid` (sourc
                             "before": { "type": "string", "description": "diff: core code before the change. Omit for new code." },
                             "after": { "type": "string", "description": "diff: core code after the change. Omit for deleted code." },
                             "code": { "type": "string", "description": "code: the snippet." },
+                            "mermaid": { "type": "string", "description": "diff, code: Mermaid source of the diagram that best explains this code, shown above it. Omit only when the code is obvious without one." },
                             "source": { "type": "string", "description": "mermaid: diagram source." },
                             "html": { "type": "string", "description": "html: full HTML document or fragment." }
                         }
@@ -141,7 +143,7 @@ mod tests {
         assert_eq!(rpc(&service, &json!({ "id": 2, "method": "nope" })).unwrap()["error"]["code"], -32601);
 
         let blocks = json!([
-            { "type": "diff", "title": "t", "file": "a.rs", "after": "fn a() {}" },
+            { "type": "diff", "title": "t", "file": "a.rs", "after": "fn a() {}", "mermaid": "graph LR; a-->b" },
             { "type": "code", "file": "a.rs", "code": "fn a() {}" },
             { "type": "mermaid", "source": "graph LR; a-->b" },
             { "type": "html", "html": "<b>hi</b>" }
@@ -157,5 +159,8 @@ mod tests {
         assert_eq!(docs.len(), 2);
         let last = docs.last().unwrap();
         assert_eq!((last.session.as_str(), last.goal.as_str(), last.blocks.len()), ("s1", "g2", 8));
+        // the diagram stays with its code block; blocks sent without one get an empty string
+        let saved = serde_json::to_value(&last.blocks).unwrap();
+        assert_eq!((&saved[0]["mermaid"], &saved[1]["mermaid"]), (&json!("graph LR; a-->b"), &json!("")));
     }
 }
