@@ -51,6 +51,14 @@ claude mcp add --transport http sidecar http://127.0.0.1:7437/mcp
 }
 ```
 
+## 에이전트 스킬
+
+`skills/sidecar-review/SKILL.md`에 에이전트가 `push_review`를 쓰는 지침이 있다(언제 보내는지, 블록 고르는 법, 차트 규칙). 이 저장소에서는 `.claude/skills/sidecar-review` 심볼릭 링크로 바로 켜진다. 다른 프로젝트에서 쓰려면 전역으로 연결한다.
+
+```sh
+ln -s "$PWD/skills/sidecar-review" ~/.claude/skills/sidecar-review
+```
+
 ## 구조
 
 Rust (`src-tauri/src`, hexagonal)

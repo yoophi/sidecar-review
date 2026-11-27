@@ -40,7 +40,7 @@ Block types: `diff` (file, before, after, mermaid), `code` (file, code, mermaid)
             "required": ["session", "goal", "blocks"],
             "properties": {
                 "session": { "type": "string", "description": "Stable id of this coding session, e.g. the branch or task name." },
-                "goal": { "type": "string", "description": "One line: what the session is trying to achieve." },
+                "goal": { "type": "string", "description": "One line stating the purpose of the work: what it should achieve for the user, not a list of the changes made. Shown as the heading of the review." },
                 "agent": { "type": "string", "description": "Name of the coding agent sending this, e.g. claude, opencode, codex." },
                 "cwd": { "type": "string", "description": "Absolute path of the agent's working directory." },
                 "agent_session_id": { "type": "string", "description": "The agent's own id for this conversation, when it knows one." },
