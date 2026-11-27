@@ -28,7 +28,7 @@ pnpm tauri dev
 claude mcp add --transport http sidecar http://127.0.0.1:7437/mcp
 ```
 
-도구는 `push_review` 하나다. `session`이 같으면 `blocks`가 그 문서 뒤에 이어 붙는다.
+도구는 `push_review` 하나다. `agent`, `cwd`, `agent_session_id`를 함께 보내면 세션 목록의 ⓘ 아이콘에 나온다. `session`이 같으면 `blocks`가 그 문서 뒤에 이어 붙는다.
 
 | type | 필드 | 화면 |
 |---|---|---|

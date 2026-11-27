@@ -14,13 +14,15 @@ use serde::Deserialize;
 use serde_json::{Value, json};
 
 use crate::application::ReviewService;
-use crate::domain::Block;
+use crate::domain::{Block, Origin};
 
 #[derive(Deserialize)]
 struct PushArgs {
     session: String,
     goal: String,
     blocks: Vec<Block>,
+    #[serde(flatten)]
+    origin: Origin,
 }
 
 fn tool() -> Value {
@@ -28,6 +30,7 @@ fn tool() -> Value {
         "name": "push_review",
         "description": "Show the human reviewer what this coding session is doing, live in the Sidecar Review desktop app. \
 Each session is one document; call this after every meaningful unit of work with the same `session` and the new blocks are appended in order. \
+Send `agent`, `cwd` and `agent_session_id` with every call so the reviewer can tell where the review comes from. \
 Send only the core: the few lines that carry the logic, trimmed of imports, boilerplate, formatting and unrelated context. \
 No prose explanations — `goal` and `title` are one short line each, written in the user's language. \
 Give every `diff` and `code` block a `mermaid` diagram that best explains that code (its flow, sequence, state or structure); leave it out only when the code is obvious without one. \
@@ -38,6 +41,9 @@ Block types: `diff` (file, before, after, mermaid), `code` (file, code, mermaid)
             "properties": {
                 "session": { "type": "string", "description": "Stable id of this coding session, e.g. the branch or task name." },
                 "goal": { "type": "string", "description": "One line: what the session is trying to achieve." },
+                "agent": { "type": "string", "description": "Name of the coding agent sending this, e.g. claude, opencode, codex." },
+                "cwd": { "type": "string", "description": "Absolute path of the agent's working directory." },
+                "agent_session_id": { "type": "string", "description": "The agent's own id for this conversation, when it knows one." },
                 "blocks": {
                     "type": "array",
                     "items": {
@@ -67,7 +73,7 @@ fn call(service: &ReviewService, params: &Value) -> Result<String, String> {
     }
     let args: PushArgs = serde_json::from_value(params["arguments"].clone()).map_err(|e| e.to_string())?;
     let session = args.session.clone();
-    let count = service.push(args.session, args.goal, args.blocks);
+    let count = service.push(args.session, args.goal, args.blocks, args.origin);
     Ok(format!("ok: session '{session}' now shows {count} blocks"))
 }
 
@@ -148,7 +154,7 @@ mod tests {
             { "type": "mermaid", "source": "graph LR; a-->b" },
             { "type": "html", "html": "<b>hi</b>" }
         ]);
-        assert_eq!(push(&service, json!({ "session": "s1", "goal": "g1", "blocks": blocks }))["isError"], false);
+        assert_eq!(push(&service, json!({ "session": "s1", "goal": "g1", "blocks": blocks, "agent": "claude", "cwd": "/repo" }))["isError"], false);
         push(&service, json!({ "session": "s2", "goal": "g", "blocks": [] }));
         push(&service, json!({ "session": "s1", "goal": "g2", "blocks": blocks }));
         // rejected input changes nothing and notifies nobody
@@ -159,6 +165,9 @@ mod tests {
         assert_eq!(docs.len(), 2);
         let last = docs.last().unwrap();
         assert_eq!((last.session.as_str(), last.goal.as_str(), last.blocks.len()), ("s1", "g2", 8));
+        // the second s1 push named no agent: the first one's answer stays
+        assert_eq!((last.origin.agent.as_str(), last.origin.cwd.as_str(), last.origin.agent_session_id.as_str()), ("claude", "/repo", ""));
+        assert!(last.created_at > 0 && last.updated_at >= last.created_at);
         // the diagram stays with its code block; blocks sent without one get an empty string
         let saved = serde_json::to_value(&last.blocks).unwrap();
         assert_eq!((&saved[0]["mermaid"], &saved[1]["mermaid"]), (&json!("graph LR; a-->b"), &json!("")));

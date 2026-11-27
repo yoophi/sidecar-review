@@ -1,6 +1,7 @@
 use std::sync::Mutex;
+use std::time::{SystemTime, UNIX_EPOCH};
 
-use crate::domain::{Block, Document};
+use crate::domain::{Block, Document, Origin};
 
 // outbound ports
 pub trait DocumentRepository: Send {
@@ -26,10 +27,11 @@ impl ReviewService {
     }
 
     /// Appends to the session's document and returns its block count.
-    pub fn push(&self, session: String, goal: String, blocks: Vec<Block>) -> usize {
+    pub fn push(&self, session: String, goal: String, blocks: Vec<Block>, origin: Origin) -> usize {
         let mut repo = self.repo.lock().unwrap();
-        let mut doc = repo.take(&session).unwrap_or_else(|| Document::new(session));
-        doc.append(goal, blocks);
+        let now = SystemTime::now().duration_since(UNIX_EPOCH).map_or(0, |d| d.as_millis() as u64);
+        let mut doc = repo.take(&session).unwrap_or_else(|| Document::new(session, now));
+        doc.append(goal, blocks, origin, now);
         let count = doc.blocks.len();
         repo.save(doc);
         self.notifier.changed(&repo.all());

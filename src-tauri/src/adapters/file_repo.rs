@@ -61,8 +61,8 @@ mod tests {
     #[test]
     fn survives_reopen() {
         let mut repo = temp("reopen");
-        repo.save(Document::new("s1".into()));
-        repo.save(Document::new("s2".into()));
+        repo.save(Document::new("s1".into(), 0));
+        repo.save(Document::new("s2".into(), 0));
         let path = repo.path.clone();
 
         let mut reopened = FileRepo::open(path.clone()).unwrap();
