@@ -55,6 +55,12 @@ summary {
   color: #1f2328;
   font-size: 11px;
 }
+/* session groups (the file tree's folders sit deeper, inside .tree) */
+nav > details > summary {
+  border-bottom: 1px solid #d1d9e0;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
 details > div {
   padding-left: 12px;
 }

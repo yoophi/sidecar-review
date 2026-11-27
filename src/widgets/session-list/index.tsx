@@ -18,26 +18,38 @@ export function SessionList(props: { docs: Document[]; current: Document; onSele
     const timer = setInterval(() => setNow(Date.now()), 30_000);
     return () => clearInterval(timer);
   }, []);
+  // one group per agent conversation, latest activity first; reviews that named no conversation go last
+  const groups = new Map<string, Document[]>();
+  for (const d of [...props.docs].reverse()) {
+    const id = d.origin.agent_session_id;
+    groups.set(id, [...(groups.get(id) ?? []), d]);
+  }
+  const unnamed = groups.get("");
+  if (groups.delete("")) groups.set("", unnamed!);
   return (
     <nav aria-label="세션">
-      {[...props.docs].reverse().map((d) => (
-        <button key={d.session} aria-current={d === props.current} onClick={() => props.onSelect(d.session)}>
-          {/* floated first so the name wraps around it; the panel shows on hover or keyboard focus, in CSS */}
-          <span className="info">
-            <i aria-hidden>ⓘ</i>
-            <span role="tooltip">
-              <span>에이전트: {d.origin.agent || "기록 없음"}</span>
-              <span>작업 디렉터리: {d.origin.cwd || "기록 없음"}</span>
-              <span>세션 ID: {d.origin.agent_session_id || "기록 없음"}</span>
-            </span>
-          </span>
-          <strong>{d.session}</strong>
-          <span>{d.goal}</span>
-          {/* the sv-SE locale formats as yyyy-mm-dd HH:MM:SS, in local time */}
-          {/* 0: the session predates the timestamps */}
-          <span>생성 {d.created_at ? new Date(d.created_at).toLocaleString("sv-SE") : "기록 없음"}</span>
-          <span>업데이트 {d.updated_at ? ago(d.updated_at, Math.max(now, Date.now())) : "기록 없음"}</span>
-        </button>
+      {[...groups].map(([id, docs]) => (
+        <details key={id} open>
+          <summary>{id ? [docs[0].origin.agent, id].filter(Boolean).join(" · ") : "세션 정보 없음"}</summary>
+          {docs.map((d) => (
+            <button key={d.session} aria-current={d === props.current} onClick={() => props.onSelect(d.session)}>
+              {/* floated first so the name wraps around it; the panel shows on hover or keyboard focus, in CSS */}
+              <span className="info">
+                <i aria-hidden>ⓘ</i>
+                <span role="tooltip">
+                  <span>에이전트: {d.origin.agent || "기록 없음"}</span>
+                  <span>작업 디렉터리: {d.origin.cwd || "기록 없음"}</span>
+                  <span>세션 ID: {d.origin.agent_session_id || "기록 없음"}</span>
+                </span>
+              </span>
+              <strong>{d.session}</strong>
+              <span>{d.goal}</span>
+              {/* the sv-SE locale formats as yyyy-mm-dd HH:MM:SS, in local time; 0: the session predates the timestamps */}
+              <span>생성 {d.created_at ? new Date(d.created_at).toLocaleString("sv-SE") : "기록 없음"}</span>
+              <span>업데이트 {d.updated_at ? ago(d.updated_at, Math.max(now, Date.now())) : "기록 없음"}</span>
+            </button>
+          ))}
+        </details>
       ))}
     </nav>
   );
